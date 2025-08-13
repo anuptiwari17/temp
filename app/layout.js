@@ -1,5 +1,10 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import AppSidebar from './_components/AppSidebar';
+import { SidebarProvider } from "@/components/ui/sidebar"
+
+import { cookies } from "next/headers"
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,12 +22,21 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  const cookieStore = cookies();
+  const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+    <SidebarProvider defaultOpen={defaultOpen}>
+      <AppSidebar />
+      <main>
         {children}
+      </main>
+    </SidebarProvider>
+
       </body>
     </html>
   );
