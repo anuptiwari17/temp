@@ -1,18 +1,6 @@
 "use client"
-import React from "react";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroupContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "@/components/ui/sidebar"
 
-// Using Heroicons - install with: npm install @heroicons/react
+import React, { useState } from "react";
 import {
   ChatBubbleLeftIcon,
   HomeIcon,
@@ -20,194 +8,140 @@ import {
   LockClosedIcon,
   ArchiveBoxIcon,
   Cog6ToothIcon,
-} from '@heroicons/react/24/outline'
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from '@heroicons/react/24/outline';
 
-const items = [
-  { 
-    title: "New Chat", 
-    url: "#", 
-    icon: ChatBubbleLeftIcon, 
-    faded: true
-  },
-  { 
-    title: "Home", 
-    url: "#", 
-    icon: HomeIcon
-  },
-  { 
-    title: "Explore", 
-    url: "#", 
-    icon: GlobeAltIcon
-  },
-  { 
-    title: "Vault", 
-    url: "#", 
-    icon: LockClosedIcon
-  },
-  { 
-    title: "Archive", 
-    url: "#", 
-    icon: ArchiveBoxIcon
-  },
-  { 
-    title: "Settings", 
-    url: "#", 
-    icon: Cog6ToothIcon
-  },
-]
-
-function SidebarLogo() {
-  const { open, setOpen } = useSidebar()
-  return (
-    <div
-      className="flex items-center justify-center h-16 cursor-pointer group relative"
-      onMouseEnter={() => setOpen(true)}
-      style={{ width: open ? 'auto' : '144px' }} // 144px = 36 * 4 (w-36 equivalent)
-    >
-      {/* Logo positioned to the right when closed */}
-      <div 
-        className="relative flex-shrink-0 transition-all duration-500 ease-out"
-        style={{
-          transform: open ? 'translateX(0px)' : 'translateX(32px)'
-        }}
-      >
-        {/* Floating orb effects */}
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 animate-spin opacity-10 scale-110" 
-             style={{ animationDuration: '8s' }}></div>
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 opacity-20 blur-md group-hover:blur-lg group-hover:opacity-30 transition-all duration-500"></div>
-        
-        <div className="relative bg-white dark:bg-gray-900 rounded-full p-1 shadow-lg ring-1 ring-gray-200/50 dark:ring-gray-700/50">
-          <img 
-            src="/query.jpeg" 
-            alt="Query Logo" 
-            className="w-8 h-8 rounded-full object-cover group-hover:scale-110 transition-transform duration-300" 
-          />
-        </div>
-        
-        {/* Subtle pulse indicator */}
-        <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse ring-2 ring-white dark:ring-gray-900"></div>
-      </div>
-      
-      {/* Brand text with staggered animation */}
-      <div 
-        className="ml-4 overflow-hidden transition-all duration-500 ease-out"
-        style={{
-          opacity: open ? 1 : 0,
-          transform: open ? 'translateX(0px)' : 'translateX(-16px)',
-          width: open ? 'auto' : '0px'
-        }}
-      >
-        <h1 className="font-bold text-lg bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
-          Query
-        </h1>
-        <p className="text-xs text-gray-500 dark:text-gray-400 -mt-1 whitespace-nowrap">
-          AI Assistant
-        </p>
-      </div>
-    </div>
-  )
-}
+const menuItems = [
+  { title: "Home", icon: HomeIcon, active: true },
+  { title: "New Chat", icon: ChatBubbleLeftIcon },
+  { title: "Explore", icon: GlobeAltIcon },
+  { title: "Vault", icon: LockClosedIcon },
+  { title: "Archive", icon: ArchiveBoxIcon },
+  { title: "Settings", icon: Cog6ToothIcon },
+];
 
 function AppSidebar() {
-  const { open, setOpen } = useSidebar()
-  
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState(null);
+
   return (
-    <div className="relative">
-      <Sidebar
-        variant="floating"
-        collapsible="icon"
-        className="transition-all duration-500 ease-out border-r border-gray-200/60 dark:border-gray-800/60 backdrop-blur-sm"
-        style={{ 
-          width: open ? '280px' : '144px', // Explicit width control
-          minWidth: open ? '280px' : '144px'
-        }}
-        onMouseLeave={() => setOpen(false)}
+    <div className="relative h-screen">
+      {/* Sidebar Container */}
+      <div 
+        className={`
+          fixed left-0 top-0 h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
+          transition-all duration-300 ease-out z-40
+          ${isCollapsed ? 'w-16' : 'w-64'}
+        `}
       >
-        {/* Header with Logo */}
-        <SidebarHeader className="border-b border-gray-100/80 dark:border-gray-800/80 bg-gradient-to-r from-gray-50/50 to-white/30 dark:from-gray-900/50 dark:to-gray-800/30">
-          <SidebarLogo />
-        </SidebarHeader>
-        
-        {/* Menu Content */}
-        <SidebarContent className="py-6 bg-gradient-to-b from-transparent to-gray-50/30 dark:to-gray-900/30">
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-1 px-3">
-              {items.map((item, index) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a
-                      href={item.url}
-                      className={`flex items-center gap-0 py-3 rounded-2xl transition-all duration-300 group relative overflow-hidden
-                        hover:bg-white/80 dark:hover:bg-gray-800/60 hover:shadow-sm hover:scale-[0.98]
-                        ${item.faded ? "opacity-60 hover:opacity-100" : ""}
-                      `}
-                      style={{ 
-                        paddingLeft: open ? '12px' : '8px',
-                        paddingRight: '12px'
-                      }}
-                    >
-                      {/* Icon Container */}
-                      <div 
-                        className="relative flex-shrink-0 flex items-center justify-center rounded-xl transition-all duration-300 group-hover:scale-105"
-                        style={{
-                          width: '44px',
-                          height: '44px',
-                          marginLeft: open ? '0px' : '-8px',
-                          backgroundColor: open ? 'transparent' : 'rgb(255 255 255 / 0.9)',
-                          boxShadow: open ? 'none' : '0 2px 8px rgb(0 0 0 / 0.04)',
-                          border: open ? 'none' : '1px solid rgb(229 231 235 / 0.6)'
-                        }}
-                      >
-                        <item.icon 
-                          className="w-6 h-6 text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-300" 
-                          strokeWidth={1.5}
-                        />
-                        
-                        {/* Subtle hover glow */}
-                        <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-blue-500/0 via-purple-500/0 to-cyan-500/0 group-hover:from-blue-500/5 group-hover:via-purple-500/5 group-hover:to-cyan-500/5 transition-all duration-300"></div>
-                      </div>
-                      
-                      {/* Text Label with smooth reveal */}
-                      <div 
-                        className="flex flex-col justify-center overflow-hidden transition-all duration-500 ease-out"
-                        style={{
-                          opacity: open ? 1 : 0,
-                          transform: open ? 'translateX(0px)' : 'translateX(-8px)',
-                          width: open ? 'auto' : '0px',
-                          marginLeft: open ? '16px' : '0px',
-                          transitionDelay: open ? `${index * 30}ms` : '0ms'
-                        }}
-                      >
-                        <span className="font-medium text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-200">
-                          {item.title}
-                        </span>
-                      </div>
-                      
-                      {/* Active indicator */}
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-gradient-to-b from-blue-500 to-purple-600 rounded-r-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarContent>
-        
-        {/* Footer */}
-        <SidebarFooter className="border-t border-gray-100/80 dark:border-gray-800/80 p-4 bg-gradient-to-t from-gray-50/50 to-transparent dark:from-gray-900/50">
-          <div 
-            className="text-xs text-gray-400 dark:text-gray-500 transition-all duration-300 font-medium"
-            style={{
-              opacity: open ? 1 : 0,
-              transform: open ? 'translateY(0px)' : 'translateY(4px)'
-            }}
-          >
-            Query AI v2.1.0
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+          {/* Logo */}
+          <div className="flex items-center space-x-3">
+            <div className="relative">
+              <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">Q</span>
+              </div>
+              <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-900"></div>
+            </div>
+            
+            {!isCollapsed && (
+              <div className="transition-opacity duration-300">
+                <h1 className="font-semibold text-gray-900 dark:text-white">Query</h1>
+                <p className="text-xs text-gray-500 dark:text-gray-400">AI Assistant</p>
+              </div>
+            )}
           </div>
-        </SidebarFooter>
-      </Sidebar>
+
+          {/* Toggle Button */}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            {isCollapsed ? (
+              <ChevronRightIcon className="w-4 h-4 text-gray-500" />
+            ) : (
+              <ChevronLeftIcon className="w-4 h-4 text-gray-500" />
+            )}
+          </button>
+        </div>
+
+        {/* Navigation Menu */}
+        <nav className="p-3 space-y-1">
+          {menuItems.map((item, index) => (
+            <div
+              key={item.title}
+              className="relative"
+              onMouseEnter={() => setHoveredItem(index)}
+              onMouseLeave={() => setHoveredItem(null)}
+            >
+              <a
+                href="#"
+                className={`
+                  flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200
+                  ${item.active 
+                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' 
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                  }
+                  ${isCollapsed ? 'justify-center' : ''}
+                `}
+              >
+                {/* Icon */}
+                <item.icon 
+                  className={`
+                    w-5 h-5 flex-shrink-0 transition-colors
+                    ${item.active ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}
+                  `} 
+                />
+                
+                {/* Label */}
+                {!isCollapsed && (
+                  <span className="font-medium text-sm truncate">
+                    {item.title}
+                  </span>
+                )}
+
+                {/* Active Indicator */}
+                {item.active && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-blue-600 rounded-r-full"></div>
+                )}
+              </a>
+
+              {/* Tooltip for collapsed state */}
+              {isCollapsed && hoveredItem === index && (
+                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-50">
+                  {item.title}
+                </div>
+              )}
+            </div>
+          ))}
+        </nav>
+
+        {/* Footer */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 dark:border-gray-800">
+          {!isCollapsed ? (
+            <div className="text-center">
+              <p className="text-xs text-gray-400 dark:text-gray-500">Query AI v2.1.0</p>
+            </div>
+          ) : (
+            <div className="flex justify-center">
+              <div className="w-2 h-2 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Overlay */}
+      <div 
+        className={`
+          fixed inset-0 bg-black/50 z-30 lg:hidden transition-opacity duration-300
+          ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}
+        `}
+        onClick={() => setIsCollapsed(true)}
+      />
     </div>
-  )
+  );
 }
 
-export default AppSidebar
+export default AppSidebar;
