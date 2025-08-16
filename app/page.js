@@ -3,8 +3,9 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-    <><div>Anup Tiwari</div>
-    <Button>Follow</Button></>
+    <>
+    
+    </>
     
   );
 }
