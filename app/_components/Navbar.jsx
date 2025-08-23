@@ -50,7 +50,6 @@ export default function Navbar() {
 
         </div>
 
-        {/* Right side - Theme toggle */}
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"

@@ -1,4 +1,3 @@
-// app/layout.js
 import "./globals.css";
 import Navbar from './_components/Navbar';
 import AppSidebar from './_components/AppSidebar';
@@ -16,7 +15,7 @@ export default async function RootLayout({ children }) {
   const defaultOpen = cookieStore.get("sidebar:state")?.value !== "false";
 
   return (
-    <html lang="en">
+    <html>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <SidebarProvider defaultOpen={defaultOpen} className="flex">
           <AppSidebar />
