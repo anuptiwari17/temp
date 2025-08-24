@@ -1,8 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -45,89 +43,42 @@
 
 :root {
   /* Base */
-  --background: oklch(0.98 0.002 95);          
-  --foreground: oklch(0.19 0.02 255);          
+  --background: #121212;
+  --foreground: #f5f5f5;
 
   /* Cards & Popovers */
-  --card: oklch(0.98 0.002 95);                
-  --card-foreground: oklch(0.19 0.02 255);
-  --popover: oklch(0.98 0.002 95);
-  --popover-foreground: oklch(0.19 0.02 255);
+  --card: #1a1a1a;
+  --card-foreground: #f5f5f5;
+  --popover: #1a1a1a;
+  --popover-foreground: #f5f5f5;
 
   /* Primary Brand */
-  --primary: oklch(0.75 0.13 164);  
-  --primary-foreground: oklch(0.98 0.002 95);
+  --primary: #10b981;
+  --primary-foreground: #121212;
 
-  /* Secondary (soft, low contrast) */
-  --secondary: oklch(0.90 0.015 95);    
-  --secondary-foreground: oklch(0.19 0.02 255);
-
-  /* Muted (for badges, subtle sections) */
-  --muted: oklch(0.86 0.02 255);             
-  --muted-foreground: oklch(0.45 0.02 255);
-
-  /* Accent (alternative highlight, softer than primary) */
-  --accent: oklch(0.93 0.015 160);            
-  --accent-foreground: oklch(0.19 0.02 255);
-
-  /* States */
-  --destructive: oklch(0.65 0.20 25);          /* Soft red */
-  --destructive-foreground: oklch(0.98 0.002 95);
-
-  /* Borders, Inputs, Rings */
-  --border: oklch(0.90 0.015 95);
-  --input: oklch(0.90 0.015 95);
-  --ring: oklch(0.75 0.13 164);                 /* Match primary */
-
-  /* Sidebar (if used) */
-  --sidebar: oklch(0.96 0.003 95);      /* Slightly darker than background for subtle separation */
-  --sidebar-foreground: var(--foreground);
-  --sidebar-primary: var(--primary);
-  --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: var(--accent);
-  --sidebar-accent-foreground: var(--accent-foreground);
-  --sidebar-border: var(--border);
-  --sidebar-ring: var(--ring);
-}
-
-.dark {
-  /* Base */
-  --background: oklch(0.19 0.02 255);          /* Slate 900 */
-  --foreground: oklch(0.98 0.002 95);          /* Warm white text */
-
-  /* Cards & Popovers */
-  --card: oklch(0.23 0.02 255);                /* Slightly lighter than background */
-  --card-foreground: oklch(0.98 0.002 95);
-  --popover: oklch(0.23 0.02 255);
-  --popover-foreground: oklch(0.98 0.002 95);
-
-  /* Primary Brand */
-  --primary: oklch(0.75 0.13 164);             /* Emerald 500 */
-  --primary-foreground: oklch(0.19 0.02 255);
-
-  /* Secondary (low contrast) */
-  --secondary: oklch(0.28 0.02 255);           /* Slate 700 */
-  --secondary-foreground: oklch(0.98 0.002 95);
+  /* Secondary */
+  --secondary: #2d2d2d;
+  --secondary-foreground: #f5f5f5;
 
   /* Muted */
-  --muted: oklch(0.25 0.02 255);               /* Slate 800 */
-  --muted-foreground: oklch(0.70 0.02 255);    /* Slate 400 */
+  --muted: #1e1e1e;
+  --muted-foreground: #9ca3af;
 
   /* Accent */
-  --accent: oklch(0.35 0.05 164);              /* Muted green-gray */
-  --accent-foreground: oklch(0.98 0.002 95);
+  --accent: #10b981;
+  --accent-foreground: #f5f5f5;
 
   /* States */
-  --destructive: oklch(0.55 0.17 25);          /* Soft dark red */
-  --destructive-foreground: oklch(0.98 0.002 95);
+  --destructive: #dc2626;
+  --destructive-foreground: #f5f5f5;
 
   /* Borders, Inputs, Rings */
-  --border: oklch(0.30 0.02 255);
-  --input: oklch(0.30 0.02 255);
-  --ring: oklch(0.75 0.13 164);
+  --border: #2a2a2a;
+  --input: #2a2a2a;
+  --ring: #10b981;
 
   /* Sidebar */
-  --sidebar: oklch(0.16 0.02 255);      /* Slightly darker than main background for depth */
+  --sidebar: #181818;
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
@@ -143,8 +94,9 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-color: #121212;
+    background-image: url("https://www.transparenttextures.com/patterns/crossword.png");
+    background-attachment: fixed;
+    background-size: auto;
   }
 }
-
-
-
