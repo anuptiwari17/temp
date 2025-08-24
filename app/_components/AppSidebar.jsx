@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
-import { usePathname } from "next/navigation";
-import { useUser, useClerk } from "@clerk/nextjs";
+import { usePathname, useRouter } from "next/navigation";
+import { useUser, useClerk, SignUpButton, SignInButton, UserButton } from "@clerk/nextjs";
 import {
   MessageSquarePlus,
   Archive,
@@ -48,17 +48,37 @@ export default function AppSidebar() {
   const path = usePathname();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
+
+
+  const router = useRouter();
   
   // Clerk hooks
   const { isSignedIn, user } = useUser();
   const { signOut } = useClerk();
 
+
+
+
+
+
+
   const handleNewChat = () => {
-    if (path !== "/") {
-      window.history.pushState({}, "", "/");
-      window.dispatchEvent(new PopStateEvent("popstate"));
-    }
-  };
+  console.log("Saving old chat..."); // placeholder for later save logic
+
+  if (path === "/") {
+    // Already on chat page → reset state via event
+    window.dispatchEvent(new Event("new-chat"));
+  } else {
+    router.push("/"); // Navigate to home
+    // Let ChatInputBox know we need reset once loaded
+    setTimeout(() => {
+      window.dispatchEvent(new Event("new-chat"));
+    }, 100);
+  }
+};
+
+
+
 
   const handleSignOut = async () => {
     await signOut();
@@ -123,7 +143,7 @@ export default function AppSidebar() {
         <div className="p-2 space-y-2 border-t border-border/40">
           {!isSignedIn ? (
             <>
-              {/* Sign In Button - Clean outline */}
+            <SignInButton mode="modal">
               <Button
                 variant="outline"
                 size="sm"
@@ -145,8 +165,9 @@ export default function AppSidebar() {
                   Sign In
                 </span>
               </Button>
+              </SignInButton>
 
-              {/* Sign Up Button - Primary style */}
+            <SignUpButton mode="modal">
               <Button
                 size="sm"
                 className={`w-full justify-center transition-all duration-300 ease-in-out font-medium ${
@@ -167,22 +188,24 @@ export default function AppSidebar() {
                   Sign Up
                 </span>
               </Button>
+              </SignUpButton>
             </>
           ) : (
             <>
-              {/* User Info - when expanded */}
               {!isCollapsed && (
-                <div className="px-3 py-2 text-sm text-muted-foreground border border-border/40 rounded-md bg-muted/30">
-                  <div className="font-medium text-foreground truncate">
-                    {user?.firstName || user?.emailAddresses[0]?.emailAddress}
-                  </div>
-                  <div className="text-xs truncate">
-                    {user?.emailAddresses[0]?.emailAddress}
-                  </div>
-                </div>
-              )}
-
-              {/* Logout Button */}
+        <div className="flex items-center justify-between px-3 py-2 text-sm text-muted-foreground border border-border/40 rounded-md bg-muted/30">
+    
+        <div className="flex flex-col">
+          <div className="font-medium text-foreground truncate">
+            {user?.firstName || user?.emailAddresses[0]?.emailAddress}
+          </div>
+            <div className="text-xs truncate">
+            {user?.emailAddresses[0]?.emailAddress}
+          </div>
+        </div>
+        <UserButton />
+      </div>
+      )}
               <Button
                 variant="outline"
                 size="sm"
@@ -210,6 +233,7 @@ export default function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
+        
         <div className={`px-3 py-2 text-xs text-muted-foreground/60 text-center transition-all duration-300 ${
           isCollapsed ? "px-1" : ""
         }`}>

@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState,  useEffect } from "react";
 import { amatic } from "@/lib/fonts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -177,6 +177,39 @@ export const ChatInputBox = ({ onResponse }) => {
       </div>
     );
   };
+
+
+
+
+
+
+
+  useEffect(() => {
+    const resetChat = () => {
+      console.log("Resetting chat input box...");
+      setInputValue("");
+      setRandomMessage(getRandomMessage());
+      setActiveTab("search");
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto";
+      }
+    };
+
+    window.addEventListener("new-chat", resetChat);
+    return () => window.removeEventListener("new-chat", resetChat);
+  }, []);
+
+
+
+
+
+
+
+
+
+
+
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4 gap-8" onClick={(e) => {
