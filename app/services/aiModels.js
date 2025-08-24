@@ -11,14 +11,15 @@ export const aiModels = {
   },
   
   // OpenRouter Models (Free)
-  "llama-3.1-8b": {
-    id: "llama-3.1-8b",
-    name: "Llama 3.1 8B",
-    desc: "Fast and efficient reasoning",
-    provider: "OpenRouter",
-    apiType: "openrouter",
-    model: "meta-llama/llama-3.1-8b-instruct:free"
-  },
+  "deepseek-r1-0528": {
+  id: "deepseek-r1-0528",
+  name: "DeepSeek R1 0528",
+  desc: "Reasoning-optimized free model",
+  provider: "OpenRouter",
+  apiType: "openrouter",
+  model: "deepseek/deepseek-r1-0528:free"
+},
+
   "mistral-7b": {
     id: "mistral-7b", 
     name: "Mistral 7B",
@@ -27,14 +28,15 @@ export const aiModels = {
     apiType: "openrouter",
     model: "mistralai/mistral-7b-instruct:free"
   },
-  "qwen-14b": {
-    id: "qwen-14b",
-    name: "Qwen 2.5 14B",
-    desc: "Excellent multilingual support",
-    provider: "OpenRouter",
-    apiType: "openrouter",
-    model: "qwen/qwen-2.5-14b-instruct:free"
-  },
+  "qwen-235b": {
+  id: "qwen-235b",
+  name: "Qwen3 235B A22B",
+  desc: "Massive reasoning + multilingual capabilities",
+  provider: "OpenRouter",
+  apiType: "openrouter",
+  model: "qwen/qwen3-235b-a22b:free"
+},
+
   
   // Google Direct API (Free)
   "gemini-flash": {

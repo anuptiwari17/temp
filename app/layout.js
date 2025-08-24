@@ -4,6 +4,7 @@ import AppSidebar from './_components/AppSidebar';
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { cookies } from "next/headers";
 import { geistSans, geistMono } from "@/lib/fonts";
+import { ClerkProvider } from "@clerk/nextjs";
 
 export const metadata = {
   title: "Create Next App",
@@ -15,6 +16,7 @@ export default async function RootLayout({ children }) {
   const defaultOpen = cookieStore.get("sidebar:state")?.value !== "false";
 
   return (
+    <ClerkProvider>
     <html>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <SidebarProvider defaultOpen={defaultOpen} className="flex">
@@ -30,5 +32,6 @@ export default async function RootLayout({ children }) {
         </SidebarProvider>
       </body>
     </html>
+    </ClerkProvider>
   );
 }

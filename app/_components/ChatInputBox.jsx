@@ -1,5 +1,6 @@
 "use client";
 import React, { useRef, useState } from "react";
+import { amatic } from "@/lib/fonts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Search, BookOpen, Paperclip, Send, Sparkles, Bot, Zap } from "lucide-react";
@@ -13,7 +14,30 @@ import {
 } from "@/services/aiModels";
 import { aiService } from "@/services/aiService";
 
+const messages = [
+  "What's sparking your curiosity?",
+  "Ready to explore something new?",
+  "What's on your learning radar?",
+  "Time to dive deep – what's the topic?",
+  "Your next discovery starts here!",
+  "What knowledge are you hunting for?",
+  "Ready to unlock some insights?",
+  "What's got you wondering today?",
+  "Let's explore the unknown together!",
+  "Curiosity activated – what's next?",
+  "What rabbit hole shall we go down?",
+  "Your learning adventure awaits!",
+  "What's the question burning in your mind?",
+  "Ready to expand your universe?",
+  "What mystery shall we solve today?",
+];
+
+const getRandomMessage = () => messages[Math.floor(Math.random() * messages.length)];
+
 export const ChatInputBox = ({ onResponse }) => {
+  // This will only run once when component mounts
+  const [randomMessage] = useState(() => getRandomMessage());
+
   const textareaRef = useRef(null);
   const [activeTab, setActiveTab] = useState("search");
   const [isFocused, setIsFocused] = useState(false);
@@ -41,7 +65,7 @@ export const ChatInputBox = ({ onResponse }) => {
       setInputValue("");
       setIsLoading(true);
       
-      // Reset textarea height
+      //Reset textarea height
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
       }
@@ -50,14 +74,14 @@ export const ChatInputBox = ({ onResponse }) => {
         const currentModel = getModelById(selectedModel);
         console.log("Submitting with model:", currentModel);
 
-        // Get system prompt based on active tab
+        //Get system prompt based on active tab
         const systemPrompt = aiService.getSystemPrompt(activeTab);
         
-        // Generate response
+        //Generating response
         const response = await aiService.generateResponse(
           selectedModel,
           userMessage,
-          [], // conversation history - you can maintain this in parent component
+          [], //conversation history -  can be maintain this in parent component, will see this later
           {
             systemPrompt: systemPrompt,
             temperature: 0.7,
@@ -65,7 +89,7 @@ export const ChatInputBox = ({ onResponse }) => {
           }
         );
 
-        // Call parent callback with response
+        //Calling parent callback with response
         if (onResponse) {
           onResponse({
             userMessage,
@@ -155,13 +179,23 @@ export const ChatInputBox = ({ onResponse }) => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4" onClick={(e) => {
+    <div className="flex flex-col items-center justify-center min-h-screen px-4 gap-8" onClick={(e) => {
       if (!e.target.closest('.relative')) {
         setShowCustomModels(false);
       }
     }}>
+      
+      <h2
+        className={`${amatic.className} font-bold text-center text-[clamp(24px,5vw,42px)] text-foreground/90 tracking-wide`}
+        style={{
+          textShadow: "0 2px 4px rgba(0,0,0,0.1)",
+        }}
+      >
+        {randomMessage}
+      </h2>
+
       <div className="w-full max-w-2xl">
-        {/* Clean Modern Card */}
+      
         <div className={`bg-card/90 backdrop-blur-sm rounded-2xl border transition-all duration-200 ${
           isFocused 
             ? "border-primary/50 shadow-lg shadow-primary/5" 
@@ -170,7 +204,7 @@ export const ChatInputBox = ({ onResponse }) => {
           
           <div className="p-5">
             <Tabs defaultValue="search" className="w-full" onValueChange={setActiveTab}>
-              {/* Minimal Mode Tabs */}
+           
               <TabsList className="grid w-full grid-cols-2 bg-background/60 rounded-xl p-1 h-9 mb-4">
                 <TabsTrigger
                   value="search"
@@ -188,7 +222,6 @@ export const ChatInputBox = ({ onResponse }) => {
                 </TabsTrigger>
               </TabsList>
 
-              {/* Text Input */}
               <div className="relative mb-4">
                 <textarea
                   ref={textareaRef}
@@ -207,12 +240,10 @@ export const ChatInputBox = ({ onResponse }) => {
                   }}
                 />
                 
-                {/* Focus line */}
                 <div className={`absolute bottom-0 left-0 h-px bg-primary transition-all duration-300 ${
                   isFocused ? "w-full opacity-100" : "w-0 opacity-0"
                 }`}></div>
                 
-                {/* Sparkle hint */}
                 {!inputValue && !isFocused && !isLoading && (
                   <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-20">
                     <Sparkles className="w-4 h-4 text-primary" />
@@ -229,7 +260,7 @@ export const ChatInputBox = ({ onResponse }) => {
 
               {/* Action Bar */}
               <div className="flex items-center justify-between gap-3">
-                {/* Model Selector - Enhanced with Provider Grouping */}
+                {/* Model Selector - along with Provider Grouping */}
                 <div className="relative">
                   <Button
                     onClick={() => setShowCustomModels(!showCustomModels)}
@@ -243,7 +274,6 @@ export const ChatInputBox = ({ onResponse }) => {
                     </span>
                   </Button>
 
-                  {/* Enhanced Models Dropdown with Provider Grouping */}
                   {showCustomModels && (
                     <div className="absolute top-full left-0 mt-1 w-64 bg-card/95 backdrop-blur-sm border border-border/40 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
                       <div className="p-2">
@@ -273,7 +303,7 @@ export const ChatInputBox = ({ onResponse }) => {
                         {renderModelGroup(nvidiaModels, "NVIDIA", "bg-green-50 dark:bg-green-900/20")}
 
                         {/* OpenRouter Models */}
-                        {renderModelGroup(openRouterModels, "OpenRouter", "bg-purple-50 dark:bg-purple-900/20")}
+                        {renderModelGroup(openRouterModels, "Others", "bg-purple-50 dark:bg-purple-900/20")}
                       </div>
                     </div>
                   )}

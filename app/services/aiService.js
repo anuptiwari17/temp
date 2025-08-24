@@ -1,16 +1,9 @@
-// /app/services/aiService.js
+// /app/services/aiService.js - Updated to use API routes
 import { getModelById, getBestAvailableModel } from './aiModels';
-import { openRouterService } from './openRouterService';
-import { googleService } from './googleService';
-import { nvidiaService } from './nvidiaService';
 
 class AIService {
   constructor() {
-    this.services = {
-      openrouter: openRouterService,
-      google: googleService,
-      nvidia: nvidiaService
-    };
+    this.apiEndpoint = '/api/chat';
   }
 
   // Main method to generate response based on model configuration
@@ -31,20 +24,26 @@ class AIService {
       // Prepare messages in OpenAI format
       const messages = this.prepareMessages(userMessage, conversationHistory, options.systemPrompt);
 
-      // Route to appropriate service
-      const service = this.services[modelConfig.apiType];
-      if (!service) {
-        throw new Error(`Service for ${modelConfig.apiType} not found`);
+      // Call API route instead of direct service calls
+      const response = await fetch(this.apiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          modelConfig,
+          messages,
+          options
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
       }
 
-      // Generate response
-      const response = await service.generateResponse(modelConfig, messages, options);
-      
-      return {
-        ...response,
-        modelUsed: modelConfig,
-        timestamp: new Date().toISOString()
-      };
+      const data = await response.json();
+      return data;
 
     } catch (error) {
       console.error('AI Service Error:', error);
@@ -52,42 +51,17 @@ class AIService {
         success: false,
         error: error.message,
         content: null,
-        modelUsed: null
+        modelUsed: null,
+        timestamp: new Date().toISOString()
       };
     }
   }
 
-  // Stream response method
+  // Stream response method - for future implementation
   async generateStreamResponse(modelId, userMessage, conversationHistory = [], options = {}) {
-    try {
-      // Get model configuration
-      let modelConfig;
-      if (modelId === 'best') {
-        modelConfig = getBestAvailableModel();
-      } else {
-        modelConfig = getModelById(modelId);
-      }
-
-      if (!modelConfig) {
-        throw new Error(`Model ${modelId} not found`);
-      }
-
-      // Prepare messages
-      const messages = this.prepareMessages(userMessage, conversationHistory, options.systemPrompt);
-
-      // Route to appropriate service
-      const service = this.services[modelConfig.apiType];
-      if (!service) {
-        throw new Error(`Service for ${modelConfig.apiType} not found`);
-      }
-
-      // Generate stream response
-      return await service.generateStreamResponse(modelConfig, messages, options);
-
-    } catch (error) {
-      console.error('AI Stream Service Error:', error);
-      throw error;
-    }
+    // For now, fallback to regular response
+    // You can implement streaming later if needed
+    return this.generateResponse(modelId, userMessage, conversationHistory, options);
   }
 
   // Prepare messages in the correct format
@@ -144,53 +118,40 @@ class AIService {
       throw new Error('Reasoning is only available with NVIDIA models');
     }
 
-    const messages = this.prepareMessages(userMessage, conversationHistory, options.systemPrompt);
-    
-    return await nvidiaService.generateWithReasoning(modelConfig, messages, options);
-  }
-
-  // Test all services connectivity
-  async testConnections() {
-    const results = {
-      openrouter: false,
-      google: false,
-      nvidia: false
+    // Add reasoning options
+    const reasoningOptions = {
+      ...options,
+      enableReasoning: true,
+      minThinkingTokens: options.minThinkingTokens || 1000,
+      maxThinkingTokens: options.maxThinkingTokens || 10000
     };
 
-    // Test OpenRouter
-    try {
-      const response = await openRouterService.generateResponse(
-        { model: 'meta-llama/llama-3.1-8b-instruct:free' },
-        [{ role: 'user', content: 'Hi' }],
-        { maxTokens: 10 }
-      );
-      results.openrouter = response.success;
-    } catch (error) {
-      console.error('OpenRouter test failed:', error);
-    }
+    return this.generateResponse(modelId, userMessage, conversationHistory, reasoningOptions);
+  }
 
-    // Test Google
-    try {
-      const response = await googleService.generateResponse(
-        { model: 'gemini-2.0-flash' },
-        [{ role: 'user', content: 'Hi' }],
-        { maxTokens: 10 }
-      );
-      results.google = response.success;
-    } catch (error) {
-      console.error('Google test failed:', error);
-    }
+  // Test API connectivity
+  async testConnections() {
+    const testModels = [
+      { id: 'deepseek-r1-0528', name: 'OpenRouter' },
+      { id: 'gemini-flash', name: 'Google' },
+      { id: 'nemotron-70b', name: 'NVIDIA' }
+    ];
 
-    // Test NVIDIA
-    try {
-      const response = await nvidiaService.generateResponse(
-        { model: 'nvidia/llama-3.1-nemotron-70b-instruct' },
-        [{ role: 'user', content: 'Hi' }],
-        { maxTokens: 10 }
-      );
-      results.nvidia = response.success;
-    } catch (error) {
-      console.error('NVIDIA test failed:', error);
+    const results = {};
+
+    for (const model of testModels) {
+      try {
+        const response = await this.generateResponse(
+          model.id,
+          'Hi',
+          [],
+          { maxTokens: 10 }
+        );
+        results[model.name.toLowerCase()] = response.success;
+      } catch (error) {
+        console.error(`${model.name} test failed:`, error);
+        results[model.name.toLowerCase()] = false;
+      }
     }
 
     return results;
