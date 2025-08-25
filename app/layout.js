@@ -5,6 +5,8 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { cookies } from "next/headers";
 import { geistSans, geistMono } from "@/lib/fonts";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Provider } from "@radix-ui/react-tooltip";
+import Providers from "./providers";
 
 export const metadata = {
   title: "Create Next App",
@@ -17,21 +19,25 @@ export default async function RootLayout({ children }) {
 
   return (
     <ClerkProvider>
-    <html>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <SidebarProvider defaultOpen={defaultOpen} className="flex">
-          <AppSidebar />
-          <main className="flex-1 flex flex-col min-w-0 w-full">
-            <Navbar />
-            <div className="flex-1 overflow-auto">
-              <div className="p-6">
-                {children}
-              </div>
-            </div>
-          </main>
-        </SidebarProvider>
-      </body>
-    </html>
+      <html>
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+          <Providers> {/* Wraping everything with Providers component */}
+            <SidebarProvider defaultOpen={defaultOpen} className="flex">
+              <AppSidebar />
+              <main className="flex-1 flex flex-col min-w-0 w-full">
+                <Navbar />
+                <div className="flex-1 overflow-auto">
+                  <div className="p-6">
+                    <Provider>
+                      {children}
+                    </Provider>
+                  </div>
+                </div>
+              </main>
+            </SidebarProvider>
+          </Providers>
+        </body>
+      </html>
     </ClerkProvider>
   );
 }
