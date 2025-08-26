@@ -4,7 +4,7 @@ import { useUser } from "@clerk/nextjs";
 import { amatic } from "@/lib/fonts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Search, BookOpen, Paperclip, Send, Sparkles, Bot, Zap } from "lucide-react";
+import { Search, BookOpen, Paperclip, Send, Sparkles, Bot, Zap, Globe } from "lucide-react";
 import { 
   aiModels, 
   getModelById, 
@@ -17,6 +17,7 @@ import { aiService } from "@/services/aiService";
 import { v4 as uuidv4 } from 'uuid';
 import { UserDetailContext } from "./../context/UserDetailContext";
 import supabase from "@/services/supabase";
+import { useRouter } from "next/navigation";
 
 const messages = [
   "What's sparking your curiosity?",
@@ -50,6 +51,8 @@ export const ChatInputBox = ({ onResponse }) => {
   const [selectedModel, setSelectedModel] = useState("best");
   const [showCustomModels, setShowCustomModels] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [webSearchEnabled, setWebSearchEnabled] = useState(false);
+  const router = useRouter();
 
   const customModels = getAllCustomModels();
   const openRouterModels = getOpenRouterModels();
@@ -59,7 +62,7 @@ export const ChatInputBox = ({ onResponse }) => {
   const needsLogin = !user;
   const isSubmitDisabled = !inputValue.trim() || isLoading;
 
-  const storeQueryInLibrary = async (searchInput, type) => {
+  const storeQueryInLibrary = async (searchInput, type, webSearchEnabled) => {
     if (!user) {
       console.error("User must be logged in to store query");
       return null;
@@ -76,7 +79,8 @@ export const ChatInputBox = ({ onResponse }) => {
       searchInput,
       userEmail,
       type,
-      libId
+      libId,
+      web_search_enabled: webSearchEnabled
     };
 
     try {
@@ -117,22 +121,64 @@ export const ChatInputBox = ({ onResponse }) => {
       textareaRef.current.style.height = "auto";
     }
 
-    const libraryEntry = await storeQueryInLibrary(userMessage, activeTab);
+    const libraryEntry = await storeQueryInLibrary(userMessage, activeTab, webSearchEnabled);
+    if (libraryEntry?.libId) {
+      router.push('/search/' + libraryEntry.libId);
+    }
 
     try {
       const currentModel = getModelById(selectedModel);
-      const systemPrompt = aiService.getSystemPrompt(activeTab);
-      
-      const response = await aiService.generateResponse(
-        selectedModel,
-        userMessage,
-        [],
-        {
-          systemPrompt: systemPrompt,
-          temperature: 0.7,
-          maxTokens: 2000
+      let response;
+
+      if (webSearchEnabled) {
+        // First get search results
+        const searchResponse = await fetch('/api/google-search-api', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query: userMessage
+          })
+        });
+
+        const searchResults = await searchResponse.json();
+        
+        if (!searchResults.success) {
+          throw new Error(searchResults.error || 'Search failed');
         }
-      );
+
+        // Then generate AI response with search context
+        const systemPrompt = aiService.getSystemPromptWithSearch(activeTab, searchResults.results);
+        
+        response = await aiService.generateResponse(
+          selectedModel,
+          userMessage,
+          [],
+          {
+            systemPrompt: systemPrompt,
+            temperature: 0.7,
+            maxTokens: 2000
+          }
+        );
+
+        // Add search results to response
+        response.searchResults = searchResults.results;
+      } else {
+        // Regular AI response without search
+        const systemPrompt = aiService.getSystemPrompt(activeTab);
+        
+        response = await aiService.generateResponse(
+          selectedModel,
+          userMessage,
+          [],
+          {
+            systemPrompt: systemPrompt,
+            temperature: 0.7,
+            maxTokens: 2000
+          }
+        );
+      }
 
       console.log("AI Response received:", response);
 
@@ -142,6 +188,7 @@ export const ChatInputBox = ({ onResponse }) => {
           response,
           mode: activeTab,
           model: currentModel,
+          webSearchEnabled,
           timestamp: new Date().toISOString(),
           libraryEntry
         });
@@ -158,6 +205,7 @@ export const ChatInputBox = ({ onResponse }) => {
           },
           mode: activeTab,
           model: getModelById(selectedModel),
+          webSearchEnabled,
           timestamp: new Date().toISOString(),
           libraryEntry
         });
@@ -227,6 +275,7 @@ export const ChatInputBox = ({ onResponse }) => {
     const resetChat = () => {
       setInputValue("");
       setActiveTab("search");
+      setWebSearchEnabled(false);
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
       }
@@ -291,6 +340,27 @@ export const ChatInputBox = ({ onResponse }) => {
                     </TabsTrigger>
                   </TabsList>
 
+                  {/* Web Search Toggle */}
+                  <div className="flex items-center gap-2 mb-4 p-3 bg-muted/20 rounded-lg">
+                    <button
+                      onClick={() => setWebSearchEnabled(!webSearchEnabled)}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                        webSearchEnabled
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "bg-background/60 text-muted-foreground hover:bg-background/80"
+                      }`}
+                    >
+                      <Globe className="w-3.5 h-3.5" />
+                      Web Search
+                    </button>
+                    <div className="flex-1 text-xs text-muted-foreground">
+                      {webSearchEnabled 
+                        ? "Search the web for up-to-date information and sources"
+                        : "Use AI knowledge only"
+                      }
+                    </div>
+                  </div>
+
                   <div className="relative mb-4">
                     <textarea
                       ref={textareaRef}
@@ -300,7 +370,11 @@ export const ChatInputBox = ({ onResponse }) => {
                       onFocus={() => setIsFocused(true)}
                       onBlur={() => setIsFocused(false)}
                       disabled={isLoading}
-                      placeholder={activeTab === "search" ? "What would you like to learn?" : "What topic to study deeply?"}
+                      placeholder={
+                        webSearchEnabled 
+                          ? (activeTab === "search" ? "Search the web and learn..." : "Research current topics deeply...")
+                          : (activeTab === "search" ? "What would you like to learn?" : "What topic to study deeply?")
+                      }
                       rows={1}
                       className="w-full bg-transparent text-foreground border-0 focus:outline-none resize-none text-base placeholder:text-muted-foreground/60 leading-relaxed disabled:opacity-50"
                       style={{ 
@@ -315,7 +389,11 @@ export const ChatInputBox = ({ onResponse }) => {
                     
                     {!inputValue && !isFocused && !isLoading && (
                       <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-20">
-                        <Sparkles className="w-4 h-4 text-primary" />
+                        {webSearchEnabled ? (
+                          <Globe className="w-4 h-4 text-primary" />
+                        ) : (
+                          <Sparkles className="w-4 h-4 text-primary" />
+                        )}
                       </div>
                     )}
 
@@ -411,6 +489,11 @@ export const ChatInputBox = ({ onResponse }) => {
               {selectedModel !== "best" && (
                 <p className="text-xs text-muted-foreground/30">
                   Using {getModelById(selectedModel).name} • {getModelById(selectedModel).provider}
+                </p>
+              )}
+              {webSearchEnabled && (
+                <p className="text-xs text-primary/60">
+                  🌐 Web search enabled
                 </p>
               )}
             </div>
